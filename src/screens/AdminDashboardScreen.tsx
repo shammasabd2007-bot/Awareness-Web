@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   RefreshControl,
   TouchableOpacity,
@@ -17,8 +16,9 @@ import {
   getAllUsers,
 } from '../database/db.web';
 import { useAuthStore } from '../store/authStore';
+import { useTheme } from '../theme/colors';
 
-// ─── Status helpers ───────────────────────────────────────────────────────────
+// ─── Status helpers (use T inside component) ─────────────────────────────────
 const statusColor = (s: string) =>
   s === 'completed' ? '#4CAF50' : s === 'in_progress' ? '#FFC107' : '#F44336';
 
@@ -29,7 +29,13 @@ const statusLabel = (s: string) =>
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function AdminDashboardScreen({ navigation }: any) {
+  const T = useTheme();
   const { user } = useAuthStore();
+
+  const sColor = (s: string) => s === 'completed' ? T.success : s === 'in_progress' ? T.warning : T.danger;
+
+  const styles = makeStyles(T);
+  const statusColor = sColor;
 
   const [refreshing, setRefreshing]         = useState(false);
 
@@ -238,14 +244,14 @@ export default function AdminDashboardScreen({ navigation }: any) {
                 activeOpacity={0.75}
               >
                 {/* Status colour strip */}
-                <View style={[styles.myLocStrip, { backgroundColor: statusColor(loc.status) }]} />
+                <View style={[styles.myLocStrip, { backgroundColor: sColor(loc.status) }]} />
 
                 <View style={styles.myLocBody}>
                   {/* Title + status badge */}
                   <View style={styles.rowBetween}>
                     <Text style={styles.myLocTitle} numberOfLines={1}>{loc.title}</Text>
-                    <View style={[styles.statusPill, { backgroundColor: statusColor(loc.status) + '22' }]}>
-                      <Text style={[styles.statusPillText, { color: statusColor(loc.status) }]}>
+                    <View style={[styles.statusPill, { backgroundColor: sColor(loc.status) + '22' }]}>
+                      <Text style={[styles.statusPillText, { color: sColor(loc.status) }]}>
                         {statusLabel(loc.status)}
                       </Text>
                     </View>
@@ -282,7 +288,7 @@ export default function AdminDashboardScreen({ navigation }: any) {
               </TouchableOpacity>
             ))
           ) : (
-            <EmptyState icon="map-outline" text="You haven't marked any locations yet" />
+            <EmptyState T={T} icon="map-outline" text="You haven't marked any locations yet" />
           )
         )}
       </View>
@@ -349,7 +355,7 @@ export default function AdminDashboardScreen({ navigation }: any) {
               </View>
             ))
         ) : (
-          <EmptyState icon="folder-open-outline" text="No locations marked yet" />
+          <EmptyState T={T} icon="folder-open-outline" text="No locations marked yet" />
         )}
       </View>
 
@@ -380,7 +386,7 @@ export default function AdminDashboardScreen({ navigation }: any) {
             </View>
           ))
         ) : (
-          <EmptyState icon="pie-chart-outline" text="No data to display" />
+          <EmptyState T={T} icon="pie-chart-outline" text="No data to display" />
         )}
       </View>
 
@@ -416,7 +422,7 @@ export default function AdminDashboardScreen({ navigation }: any) {
             </View>
           ))
         ) : (
-          <EmptyState icon="trophy-outline" text="No contributions yet" />
+          <EmptyState T={T} icon="trophy-outline" text="No contributions yet" />
         )}
       </View>
 
@@ -426,7 +432,7 @@ export default function AdminDashboardScreen({ navigation }: any) {
         {allLocations.length > 0 ? (
           allLocations.slice(0, 8).map((loc) => (
             <View key={loc.id} style={styles.recentRow}>
-              <View style={[styles.recentDot, { backgroundColor: statusColor(loc.status) }]} />
+              <View style={[styles.recentDot, { backgroundColor: sColor(loc.status) }]} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.recentTitle}>{loc.title}</Text>
                 <Text style={styles.recentMeta}>{loc.category}</Text>
@@ -439,18 +445,18 @@ export default function AdminDashboardScreen({ navigation }: any) {
             </View>
           ))
         ) : (
-          <EmptyState icon="map-outline" text="No locations marked yet" />
+          <EmptyState T={T} icon="map-outline" text="No locations marked yet" />
         )}
       </View>
 
       {/* System overview */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>⚙️ System Overview</Text>
-        <SysRow label="Registered Users"  value={String(totalUsers)} />
-        <SysRow label="Total Locations"   value={String(analytics.total)} />
-        <SysRow label="Completion Rate"   value={`${completionPct}%`} />
-        <SysRow label="Pending Visits"    value={String(analytics.notVisited)} />
-        <SysRow label="My Locations"      value={String(myAnalytics.total)} />
+        <SysRow T={T} label="Registered Users"  value={String(totalUsers)} />
+        <SysRow T={T} label="Total Locations"   value={String(analytics.total)} />
+        <SysRow T={T} label="Completion Rate"   value={`${completionPct}%`} />
+        <SysRow T={T} label="Pending Visits"    value={String(analytics.notVisited)} />
+        <SysRow T={T} label="My Locations"      value={String(myAnalytics.total)} />
       </View>
 
       <View style={{ height: 32 }} />
@@ -459,129 +465,74 @@ export default function AdminDashboardScreen({ navigation }: any) {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const EmptyState = ({ icon, text }: { icon: any; text: string }) => (
-  <View style={emptyStyles.box}>
-    <Ionicons name={icon} size={34} color="#ddd" />
-    <Text style={emptyStyles.text}>{text}</Text>
+const EmptyState = ({ icon, text, T }: { icon: any; text: string; T: any }) => (
+  <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+    <Ionicons name={icon} size={34} color={T.textMuted} />
+    <Text style={{ fontSize: 13, color: T.textMuted, marginTop: 8, textAlign: 'center' }}>{text}</Text>
   </View>
 );
-const emptyStyles = StyleSheet.create({
-  box: { alignItems: 'center', paddingVertical: 24 },
-  text: { fontSize: 13, color: '#bbb', marginTop: 8, textAlign: 'center' },
-});
 
-const SysRow = ({ label, value }: { label: string; value: string }) => (
-  <View style={sysStyles.row}>
-    <Text style={sysStyles.label}>{label}</Text>
-    <Text style={sysStyles.value}>{value}</Text>
+const SysRow = ({ label, value, T }: { label: string; value: string; T: any }) => (
+  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: T.surface }}>
+    <Text style={{ fontSize: 14, color: T.textSecond }}>{label}</Text>
+    <Text style={{ fontSize: 14, fontWeight: '700', color: T.primary }}>{value}</Text>
   </View>
 );
-const sysStyles = StyleSheet.create({
-  row: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F0EEF8',
-  },
-  label: { fontSize: 14, color: '#666' },
-  value: { fontSize: 14, fontWeight: '700', color: '#8458B3' },
-});
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0EEF8' },
-
-  /* Header */
-  header: {
-    backgroundColor: '#8458B3', padding: 20, paddingTop: 44, alignItems: 'center',
-  },
-  headerTitle: { fontSize: 22, fontWeight: '800', color: '#fff', marginTop: 8 },
-  headerSub:   { fontSize: 13, color: '#D0BDF4', marginTop: 4 },
-
-  /* Section divider */
-  sectionDivider: {
-    flexDirection: 'row', alignItems: 'center',
-    marginHorizontal: 12, marginTop: 16, marginBottom: 4, gap: 8,
-  },
-  sectionDividerLine: { flex: 1, height: 1, backgroundColor: '#ddd' },
-  sectionDividerText: { fontSize: 12, fontWeight: '700', color: '#555', textAlign: 'center' },
-
-  /* Metrics grid */
-  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', padding: 12, gap: 10 },
-  metricCard:  { width: '48%', padding: 14, borderRadius: 14, alignItems: 'center' },
-  metricValue: { fontSize: 26, fontWeight: '800', color: '#fff', marginTop: 6 },
-  metricLabel: { fontSize: 11, color: 'rgba(255,255,255,0.9)', marginTop: 4, textAlign: 'center' },
-
-  /* Generic card */
-  card: {
-    backgroundColor: '#fff', marginHorizontal: 12, marginBottom: 10,
-    padding: 16, borderRadius: 14,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.07, shadowRadius: 4, elevation: 2,
-  },
-  cardTitle: { fontSize: 15, fontWeight: '700', color: '#333', marginBottom: 12 },
-  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-
-  /* Progress */
-  pctBadge:      { fontSize: 15, fontWeight: '800', color: '#8458B3' },
-  progressTrack: { height: 10, backgroundColor: '#E5EAF5', borderRadius: 5, overflow: 'hidden', marginBottom: 8 },
-  progressFill:  { height: '100%', backgroundColor: '#8458B3', borderRadius: 5 },
-  progressSub:   { fontSize: 12, color: '#888' },
-
-  /* Category bars */
-  catRow:      { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 8 },
-  catName:     { fontSize: 12, color: '#555', width: 110 },
-  catBarTrack: { flex: 1, height: 8, backgroundColor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' },
-  catBarFill:  { height: '100%', backgroundColor: '#8458B3', borderRadius: 4 },
-  catCount:    { fontSize: 12, fontWeight: '700', color: '#333', width: 24, textAlign: 'right' },
-
-  /* Status distribution */
-  distRow:      { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 8 },
-  distDot:      { width: 10, height: 10, borderRadius: 5 },
-  distLabel:    { fontSize: 12, color: '#555', width: 80 },
-  distBarTrack: { flex: 1, height: 8, backgroundColor: '#f0f0f0', borderRadius: 4, overflow: 'hidden' },
-  distBarFill:  { height: '100%', borderRadius: 4 },
-  distCount:    { fontSize: 12, fontWeight: '700', color: '#333', width: 24, textAlign: 'right' },
-
-  /* ── My location rows ── */
-  myLocRow: {
-    flexDirection: 'row', alignItems: 'stretch',
-    backgroundColor: '#fafafa', borderRadius: 10,
-    marginBottom: 10, overflow: 'hidden',
-    borderWidth: 1, borderColor: '#eee',
-  },
+// ─── Dynamic styles builder ───────────────────────────────────────────────────
+const makeStyles = (T: any) => ({
+  container: { flex: 1, backgroundColor: T.bg },
+  header: { backgroundColor: T.headerBg, padding: 20, paddingTop: 44, alignItems: 'center' as const },
+  headerTitle: { fontSize: 22, fontWeight: '800' as const, color: T.headerText, marginTop: 8 },
+  headerSub: { fontSize: 13, color: T.headerSub, marginTop: 4 },
+  sectionDivider: { flexDirection: 'row' as const, alignItems: 'center' as const, marginHorizontal: 12, marginTop: 16, marginBottom: 4, gap: 8 },
+  sectionDividerLine: { flex: 1, height: 1, backgroundColor: T.border },
+  sectionDividerText: { fontSize: 12, fontWeight: '700' as const, color: T.textSecond, textAlign: 'center' as const },
+  metricsGrid: { flexDirection: 'row' as const, flexWrap: 'wrap' as const, padding: 12, gap: 10 },
+  metricCard: { width: '48%' as any, padding: 14, borderRadius: 14, alignItems: 'center' as const },
+  metricValue: { fontSize: 26, fontWeight: '800' as const, color: T.white, marginTop: 6 },
+  metricLabel: { fontSize: 11, color: 'rgba(255,255,255,0.9)', marginTop: 4, textAlign: 'center' as const },
+  card: { backgroundColor: T.cardBg, marginHorizontal: 12, marginBottom: 10, padding: 16, borderRadius: 14, shadowColor: T.dark, shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4, elevation: 2 },
+  cardTitle: { fontSize: 15, fontWeight: '700' as const, color: T.textPrimary, marginBottom: 12 },
+  rowBetween: { flexDirection: 'row' as const, justifyContent: 'space-between' as const, alignItems: 'center' as const, marginBottom: 10 },
+  pctBadge: { fontSize: 15, fontWeight: '800' as const, color: T.primary },
+  progressTrack: { height: 10, backgroundColor: T.surface, borderRadius: 5, overflow: 'hidden' as const, marginBottom: 8 },
+  progressFill: { height: '100%' as any, backgroundColor: T.primary, borderRadius: 5 },
+  progressSub: { fontSize: 12, color: T.textSecond },
+  catRow: { flexDirection: 'row' as const, alignItems: 'center' as const, marginBottom: 12, gap: 8 },
+  catName: { fontSize: 12, color: T.textSecond, width: 110 },
+  catBarTrack: { flex: 1, height: 8, backgroundColor: T.surface, borderRadius: 4, overflow: 'hidden' as const },
+  catBarFill: { height: '100%' as any, backgroundColor: T.primary, borderRadius: 4 },
+  catCount: { fontSize: 12, fontWeight: '700' as const, color: T.textPrimary, width: 24, textAlign: 'right' as const },
+  distRow: { flexDirection: 'row' as const, alignItems: 'center' as const, marginBottom: 10, gap: 8 },
+  distDot: { width: 10, height: 10, borderRadius: 5 },
+  distLabel: { fontSize: 12, color: T.textSecond, width: 80 },
+  distBarTrack: { flex: 1, height: 8, backgroundColor: T.surface, borderRadius: 4, overflow: 'hidden' as const },
+  distBarFill: { height: '100%' as any, borderRadius: 4 },
+  distCount: { fontSize: 12, fontWeight: '700' as const, color: T.textPrimary, width: 24, textAlign: 'right' as const },
+  myLocRow: { flexDirection: 'row' as const, alignItems: 'stretch' as const, backgroundColor: T.surface, borderRadius: 10, marginBottom: 10, overflow: 'hidden' as const, borderWidth: 1, borderColor: T.border },
   myLocStrip: { width: 5 },
-  myLocBody:  { flex: 1, padding: 12 },
-  myLocTitle: { fontSize: 14, fontWeight: '700', color: '#222', flex: 1, marginRight: 8 },
-  myLocMeta:  { flexDirection: 'row', gap: 10, marginTop: 6, flexWrap: 'wrap' },
-  metaChip:   { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  metaChipText: { fontSize: 11, color: '#888' },
-  myLocDesc:  { fontSize: 12, color: '#666', marginTop: 6, lineHeight: 17 },
-  myLocCoords:{ fontSize: 11, color: '#aaa', marginTop: 5 },
-
-  /* Status pill */
-  statusPill:     { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  statusPillText: { fontSize: 10, fontWeight: '700' },
-
-  /* Leaderboard */
-  leaderRow: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F0EEF8',
-  },
-  rankBadge: {
-    width: 34, height: 34, borderRadius: 17,
-    backgroundColor: '#8458B3', justifyContent: 'center', alignItems: 'center', marginRight: 12,
-  },
-  rankText:      { color: '#fff', fontWeight: '700', fontSize: 12 },
-  leaderNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  leaderName:    { fontSize: 14, fontWeight: '600', color: '#333' },
-  leaderPts:     { fontSize: 12, color: '#999', marginTop: 1 },
-  medal:         { fontSize: 20 },
-  leaderRolePill:{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8 },
-  leaderRoleText:{ fontSize: 10, fontWeight: '700' },
-
-  /* Recent rows */
-  recentRow:  { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F0EEF8' },
-  recentDot:  { width: 10, height: 10, borderRadius: 5, marginRight: 12 },
-  recentTitle:{ fontSize: 13, fontWeight: '600', color: '#333' },
-  recentMeta: { fontSize: 11, color: '#999', marginTop: 1 },
-  recentDate: { fontSize: 11, color: '#bbb' },
+  myLocBody: { flex: 1, padding: 12 },
+  myLocTitle: { fontSize: 14, fontWeight: '700' as const, color: T.textPrimary, flex: 1, marginRight: 8 },
+  myLocMeta: { flexDirection: 'row' as const, gap: 10, marginTop: 6, flexWrap: 'wrap' as const },
+  metaChip: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4 },
+  metaChipText: { fontSize: 11, color: T.textMuted },
+  myLocDesc: { fontSize: 12, color: T.textSecond, marginTop: 6, lineHeight: 17 },
+  myLocCoords: { fontSize: 11, color: T.textMuted, marginTop: 5 },
+  statusPill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  statusPillText: { fontSize: 10, fontWeight: '700' as const },
+  leaderRow: { flexDirection: 'row' as const, alignItems: 'center' as const, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: T.surface },
+  rankBadge: { width: 34, height: 34, borderRadius: 17, backgroundColor: T.primary, justifyContent: 'center' as const, alignItems: 'center' as const, marginRight: 12 },
+  rankText: { color: T.white, fontWeight: '700' as const, fontSize: 12 },
+  leaderNameRow: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 6, flexWrap: 'wrap' as const },
+  leaderName: { fontSize: 14, fontWeight: '600' as const, color: T.textPrimary },
+  leaderPts: { fontSize: 12, color: T.textMuted, marginTop: 1 },
+  medal: { fontSize: 20 },
+  leaderRolePill: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8 },
+  leaderRoleText: { fontSize: 10, fontWeight: '700' as const },
+  recentRow: { flexDirection: 'row' as const, alignItems: 'center' as const, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: T.surface },
+  recentDot: { width: 10, height: 10, borderRadius: 5, marginRight: 12 },
+  recentTitle: { fontSize: 13, fontWeight: '600' as const, color: T.textPrimary },
+  recentMeta: { fontSize: 11, color: T.textMuted, marginTop: 1 },
+  recentDate: { fontSize: 11, color: T.textMuted },
 });

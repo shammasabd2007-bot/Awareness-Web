@@ -27,6 +27,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/authStore';
+import { useTheme } from '../theme/colors';
 import {
   sendMessage,
   getThreadMessages,
@@ -53,6 +54,8 @@ const fmtTime = (iso: string) =>
 
 // ─── User/Volunteer chat panel ────────────────────────────────────────────────
 function UserChatPanel({ onClose }: { onClose: () => void }) {
+  const T = useTheme();
+  const fab = makeFab(T); const ps = makePs(T); const ms = makeMs(T); const inb = makeInb(T);
   const { user }                    = useAuthStore();
   const [messages, setMessages]     = useState<any[]>([]);
   const [text, setText]             = useState('');
@@ -198,6 +201,8 @@ function UserChatPanel({ onClose }: { onClose: () => void }) {
 
 // ─── Admin inbox panel ────────────────────────────────────────────────────────
 function AdminInboxPanel({ onClose }: { onClose: () => void }) {
+  const T = useTheme();
+  const fab = makeFab(T); const ps = makePs(T); const ms = makeMs(T); const inb = makeInb(T);
   const { user }                        = useAuthStore();
   const [threads, setThreads]           = useState<any[]>([]);
   const [activeThread, setActiveThread] = useState<any>(null);
@@ -303,6 +308,8 @@ function AdminThreadPanel({
   onBack: () => void;
   onClose: () => void;
 }) {
+  const T = useTheme();
+  const fab = makeFab(T); const ps = makePs(T); const ms = makeMs(T); const inb = makeInb(T);
   const { user }                    = useAuthStore();
   const [messages, setMessages]     = useState<any[]>([]);
   const [text, setText]             = useState('');
@@ -439,6 +446,9 @@ function AdminThreadPanel({
 
 // ─── Floating button + modal shell ───────────────────────────────────────────
 export default function FloatingChat() {
+  const T = useTheme();
+  const fab = makeFab(T);
+  const ps = makePs(T);
   const { user }              = useAuthStore();
   const [open, setOpen]       = useState(false);
   const [unread, setUnread]   = useState(0);
@@ -531,154 +541,85 @@ export default function FloatingChat() {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-/** Floating button + modal */
-const fab = StyleSheet.create({
+/** Floating button + modal — theme-aware builders */
+const makeFab = (T: any) => ({
   btn: {
-    position:        'absolute',
-    bottom:          24,
-    right:           20,
-    width:           58,
-    height:          58,
-    borderRadius:    29,
-    backgroundColor: '#8458B3',
-    justifyContent:  'center',
-    alignItems:      'center',
-    shadowColor:     '#000',
-    shadowOffset:    { width: 0, height: 4 },
-    shadowOpacity:   0.3,
-    shadowRadius:    6,
-    elevation:       10,
-    zIndex:          999,
+    position: 'absolute' as const, bottom: 24, right: 20,
+    width: 58, height: 58, borderRadius: 29,
+    backgroundColor: T.primary,
+    justifyContent: 'center' as const, alignItems: 'center' as const,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3, shadowRadius: 6, elevation: 10, zIndex: 999,
   },
   badge: {
-    position:        'absolute',
-    top:             -2,
-    right:           -2,
-    minWidth:        20,
-    height:          20,
-    borderRadius:    10,
-    backgroundColor: '#E05C7A',
-    justifyContent:  'center',
-    alignItems:      'center',
-    paddingHorizontal: 4,
-    borderWidth:     2,
-    borderColor:     '#fff',
+    position: 'absolute' as const, top: -2, right: -2,
+    minWidth: 20, height: 20, borderRadius: 10,
+    backgroundColor: T.danger,
+    justifyContent: 'center' as const, alignItems: 'center' as const,
+    paddingHorizontal: 4, borderWidth: 2, borderColor: T.cardBg,
   },
-  badgeTxt: { fontSize: 10, fontWeight: '800', color: '#fff' },
-  backdrop: {
-    position:        'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-  },
+  badgeTxt: { fontSize: 10, fontWeight: '800' as const, color: T.white },
+  backdrop: { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.35)' },
   panel: {
-    position:        'absolute',
-    left:            0,
-    right:           0,
-    bottom:          0,
-    height:          SCREEN_H * 0.82,
-    backgroundColor: '#F0EEF8',
-    borderTopLeftRadius:  22,
-    borderTopRightRadius: 22,
-    overflow:        'hidden',
-    shadowColor:     '#000',
-    shadowOffset:    { width: 0, height: -4 },
-    shadowOpacity:   0.15,
-    shadowRadius:    12,
-    elevation:       20,
+    position: 'absolute' as const, left: 0, right: 0, bottom: 0,
+    height: SCREEN_H * 0.82, backgroundColor: T.bg,
+    borderTopLeftRadius: 22, borderTopRightRadius: 22,
+    overflow: 'hidden' as const,
+    shadowColor: '#000', shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15, shadowRadius: 12, elevation: 20,
   },
-  handle: {
-    width:           44,
-    height:          5,
-    borderRadius:    3,
-    backgroundColor: '#ddd',
-    alignSelf:       'center',
-    marginTop:       10,
-    marginBottom:    4,
-  },
+  handle: { width: 44, height: 5, borderRadius: 3, backgroundColor: T.border, alignSelf: 'center' as const, marginTop: 10, marginBottom: 4 },
 });
 
-/** Panel header / input shared styles */
-const ps = StyleSheet.create({
-  header: {
-    flexDirection:   'row',
-    alignItems:      'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  headerLeft:  { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  adminAv: {
-    width: 38, height: 38, borderRadius: 19,
-    backgroundColor: '#8458B3',
-    justifyContent: 'center', alignItems: 'center',
-  },
-  headerName:  { fontSize: 15, fontWeight: '700', color: '#222' },
-  headerSub:   { fontSize: 11, color: '#888', marginTop: 1 },
-  privatePill: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#E5EAF5', paddingHorizontal: 8, paddingVertical: 3,
-    borderRadius: 10, marginRight: 8,
-  },
-  privatePillTxt: { fontSize: 10, color: '#8458B3', fontWeight: '700' },
-  closeBtn:    { padding: 6 },
-  centered:    { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  empty: {
-    flex: 1, justifyContent: 'center', alignItems: 'center', padding: 28,
-  },
-  emptyTitle:  { fontSize: 16, fontWeight: '700', color: '#bbb', marginTop: 14 },
-  emptySub:    { fontSize: 13, color: '#ccc', textAlign: 'center', marginTop: 8, lineHeight: 20 },
-  inputBar: {
-    flexDirection: 'row', alignItems: 'flex-end',
-    backgroundColor: '#fff', paddingHorizontal: 12, paddingVertical: 10,
-    borderTopWidth: 1, borderTopColor: '#eee', gap: 10,
-  },
-  input: {
-    flex: 1, borderWidth: 1.5, borderColor: '#e0e0e0', borderRadius: 22,
-    paddingHorizontal: 16, paddingVertical: 10, fontSize: 14, color: '#333',
-    maxHeight: 100, backgroundColor: '#fafafa',
-  },
-  sendBtn:    { width: 42, height: 42, borderRadius: 21, backgroundColor: '#8458B3', justifyContent: 'center', alignItems: 'center' },
-  sendBtnOff: { backgroundColor: '#bbb' },
+const makePs = (T: any) => ({
+  header: { flexDirection: 'row' as const, alignItems: 'center' as const, backgroundColor: T.cardBg, paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: T.border },
+  headerLeft: { flexDirection: 'row' as const, alignItems: 'center' as const, flex: 1 },
+  adminAv: { width: 38, height: 38, borderRadius: 19, backgroundColor: T.primary, justifyContent: 'center' as const, alignItems: 'center' as const },
+  headerName: { fontSize: 15, fontWeight: '700' as const, color: T.textPrimary },
+  headerSub: { fontSize: 11, color: T.textMuted, marginTop: 1 },
+  privatePill: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4, backgroundColor: T.primaryLight, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, marginRight: 8 },
+  privatePillTxt: { fontSize: 10, color: T.primary, fontWeight: '700' as const },
+  closeBtn: { padding: 6 },
+  centered: { flex: 1, justifyContent: 'center' as const, alignItems: 'center' as const },
+  empty: { flex: 1, justifyContent: 'center' as const, alignItems: 'center' as const, padding: 28 },
+  emptyTitle: { fontSize: 16, fontWeight: '700' as const, color: T.textMuted, marginTop: 14 },
+  emptySub: { fontSize: 13, color: T.textMuted, textAlign: 'center' as const, marginTop: 8, lineHeight: 20 },
+  inputBar: { flexDirection: 'row' as const, alignItems: 'flex-end' as const, backgroundColor: T.cardBg, paddingHorizontal: 12, paddingVertical: 10, borderTopWidth: 1, borderTopColor: T.border, gap: 10 },
+  input: { flex: 1, borderWidth: 1.5, borderColor: T.border, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10, fontSize: 14, color: T.textPrimary, maxHeight: 100, backgroundColor: T.surface },
+  sendBtn: { width: 42, height: 42, borderRadius: 21, backgroundColor: T.primary, justifyContent: 'center' as const, alignItems: 'center' as const },
+  sendBtnOff: { backgroundColor: T.textMuted },
 });
 
-/** Message bubble styles */
-const ms = StyleSheet.create({
-  row:          { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 10 },
-  rowR:         { justifyContent: 'flex-end' },
-  rowL:         { justifyContent: 'flex-start' },
-  adminAvatar:  { width: 26, height: 26, borderRadius: 13, backgroundColor: '#8458B3', justifyContent: 'center', alignItems: 'center', marginRight: 7 },
-  userAvatar:   { width: 26, height: 26, borderRadius: 13, backgroundColor: '#A0D2EB', justifyContent: 'center', alignItems: 'center', marginLeft: 7 },
-  userAvatarTxt:{ fontSize: 11, fontWeight: '800', color: '#fff' },
-  bubble:       { maxWidth: '72%', paddingHorizontal: 13, paddingVertical: 9, borderRadius: 18 },
-  bubbleMine:   { backgroundColor: '#8458B3', borderBottomRightRadius: 4 },
-  bubbleAdmin:  { backgroundColor: '#fff', borderBottomLeftRadius: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 3, elevation: 1 },
-  sender:       { fontSize: 10, fontWeight: '700', color: '#8458B3', marginBottom: 3 },
-  msgText:      { fontSize: 14, color: '#333', lineHeight: 20 },
-  msgTextMine:  { color: '#fff' },
-  time:         { fontSize: 10, color: '#aaa', marginTop: 3, textAlign: 'right' },
-  timeMine:     { color: 'rgba(255,255,255,0.6)' },
+const makeMs = (T: any) => ({
+  row: { flexDirection: 'row' as const, alignItems: 'flex-end' as const, marginBottom: 10 },
+  rowR: { justifyContent: 'flex-end' as const },
+  rowL: { justifyContent: 'flex-start' as const },
+  adminAvatar: { width: 26, height: 26, borderRadius: 13, backgroundColor: T.primary, justifyContent: 'center' as const, alignItems: 'center' as const, marginRight: 7 },
+  userAvatar: { width: 26, height: 26, borderRadius: 13, backgroundColor: T.accent, justifyContent: 'center' as const, alignItems: 'center' as const, marginLeft: 7 },
+  userAvatarTxt: { fontSize: 11, fontWeight: '800' as const, color: T.white },
+  bubble: { maxWidth: '72%' as any, paddingHorizontal: 13, paddingVertical: 9, borderRadius: 18 },
+  bubbleMine: { backgroundColor: T.primary, borderBottomRightRadius: 4 },
+  bubbleAdmin: { backgroundColor: T.cardBg, borderBottomLeftRadius: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 3, elevation: 1 },
+  sender: { fontSize: 10, fontWeight: '700' as const, color: T.primary, marginBottom: 3 },
+  msgText: { fontSize: 14, color: T.textPrimary, lineHeight: 20 },
+  msgTextMine: { color: T.white },
+  time: { fontSize: 10, color: T.textMuted, marginTop: 3, textAlign: 'right' as const },
+  timeMine: { color: 'rgba(255,255,255,0.6)' },
 });
 
-/** Inbox list styles */
-const inb = StyleSheet.create({
-  card: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#fff', borderRadius: 14, padding: 13, marginBottom: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.07, shadowRadius: 4, elevation: 2,
-  },
-  cardUnread: { borderLeftWidth: 4, borderLeftColor: '#8458B3' },
-  av:         { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  avTxt:      { fontSize: 17, fontWeight: '800', color: '#fff' },
-  row:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  name:       { fontSize: 14, fontWeight: '700', color: '#222' },
-  date:       { fontSize: 11, color: '#aaa' },
-  rolePill:   { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8 },
-  roleTxt:    { fontSize: 10, fontWeight: '700' },
-  email:      { fontSize: 11, color: '#aaa', flex: 1, marginLeft: 6 },
-  lastMsg:    { fontSize: 12, color: '#888', marginTop: 3 },
-  badge:      { minWidth: 20, height: 20, borderRadius: 10, backgroundColor: '#E05C7A', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4, marginLeft: 8 },
-  badgeTxt:   { fontSize: 10, fontWeight: '800', color: '#fff' },
+const makeInb = (T: any) => ({
+  card: { flexDirection: 'row' as const, alignItems: 'center' as const, backgroundColor: T.cardBg, borderRadius: 14, padding: 13, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.07, shadowRadius: 4, elevation: 2 },
+  cardUnread: { borderLeftWidth: 4, borderLeftColor: T.primary },
+  av: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center' as const, alignItems: 'center' as const },
+  avTxt: { fontSize: 17, fontWeight: '800' as const, color: T.white },
+  row: { flexDirection: 'row' as const, justifyContent: 'space-between' as const, alignItems: 'center' as const },
+  name: { fontSize: 14, fontWeight: '700' as const, color: T.textPrimary },
+  date: { fontSize: 11, color: T.textMuted },
+  rolePill: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8 },
+  roleTxt: { fontSize: 10, fontWeight: '700' as const },
+  email: { fontSize: 11, color: T.textMuted, flex: 1, marginLeft: 6 },
+  lastMsg: { fontSize: 12, color: T.textSecond, marginTop: 3 },
+  badge: { minWidth: 20, height: 20, borderRadius: 10, backgroundColor: T.danger, justifyContent: 'center' as const, alignItems: 'center' as const, paddingHorizontal: 4, marginLeft: 8 },
+  badgeTxt: { fontSize: 10, fontWeight: '800' as const, color: T.white },
 });
+
